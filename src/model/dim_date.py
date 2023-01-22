@@ -5,8 +5,6 @@ import pandas as pd
 
 
 class DimDate:
-    """
-    """
     def __init__(self, start: datetime.date, end: datetime.date) -> None:
         self.__ger_holiday = holidays.Germany(subdiv="BW", years=range(start.year, end.year))
         self.__date_series = pd.Series(pd.date_range(start, end))
