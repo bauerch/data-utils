@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import holidays
 import locale
@@ -141,18 +142,56 @@ class DimDate:
         return column, series
 
 
-def main(
-        filename: str = "Dim_Kalendertag.csv",
-        date_from: datetime.date = datetime.date(2000, 1, 1),
-        date_till: datetime.date = datetime.date(2049, 12, 31)
-) -> None:
+def main() -> None:
     """
     """
-    assert filename.endswith(".csv")
+    parser = argparse.ArgumentParser(
+        description="Build a Date Dimension for a Data Warehouse. "
+        + "The output will be written to a CSV file unless a file "
+        + "is specified with the -f/--file option."
+    )
+    parser.add_argument(
+        "-f",
+        "--file",
+        dest="filename",
+        help="Write data to a file",
+        metavar="FILE"
+    )
+    parser.add_argument(
+        "--from",
+        dest="date_from",
+        default="01.01.2000",
+        help="Starting date of the date dimension. Default is 01.01.2000",
+        metavar="DATE"
+    )
+    parser.add_argument(
+        "--till",
+        dest="date_till",
+        default="31.12.2049",
+        help="Ending date for the date dimension. Default is 31.12.2049",
+        metavar="DATE"
+    )
+    args = parser.parse_args()
 
-    locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
-    dim_date = DimDate(start=date_from, end=date_till)
-    dim_date.dataframe.to_csv(filename, index=False)
+    try:
+        date_from = datetime.datetime.strptime(args.date_from, "%d.%m.%Y")
+        date_till = datetime.datetime.strptime(args.date_till, "%d.%m.%Y")
+    except ValueError as error:
+        print(
+            f"Unable to create the date dimension for the given dates "
+            f"{args.date_from} and {args.date_till}. Error details: {error!r}"
+        )
+        parser.print_help()
+    else:
+        locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
+        dim_date = DimDate(start=date_from, end=date_till)
+
+        if args.filename.endswith(".csv"):
+            dim_date.dataframe.to_csv(args.filename, index=False)
+        elif args.filename.endswith(".parquet"):
+            dim_date.dataframe.to_parquet(args.filename)
+        else:
+            dim_date.dataframe.to_csv("Dim_Kalendertag.csv", index=False)
 
 
 if __name__ == "__main__":

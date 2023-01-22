@@ -1,3 +1,4 @@
+import argparse
 import locale
 import pandas as pd
 
@@ -8,15 +9,16 @@ class DimTime:
     SECONDS = [i for i in range(0, 60)]
 
     def __init__(self) -> None:
-        columns, data = self.__create_columns()
-        self.__dataframe = pd.DataFrame(data, columns=columns)
+        data = self.__create_rows()
+        self.__dataframe = pd.DataFrame(data, columns=self.columns)
 
     @property
     def dataframe(self) -> pd.DataFrame:
         return self.__dataframe
 
-    def __create_columns(self) -> tuple[list[str], list[list]]:
-        columns = [
+    @property
+    def columns(self) -> list[str]:
+        return [
             "Zeit_Key",
             "Stunde_Format_24",
             "Stunde_Format_24_Text",
@@ -32,12 +34,14 @@ class DimTime:
             "Zeit_Kurz_Text",
             "Zeit_Lang_Text"
         ]
-        data = []
+
+    def __create_rows(self) -> list[list]:
+        rows = []
 
         for hour in self.HOURS:
             for minute in self.MINUTES:
                 for second in self.SECONDS:
-                    data.append([
+                    rows.append([
                         10000 * hour + 100 * minute + second,
                         hour,
                         f"{hour:02d}",
@@ -54,15 +58,33 @@ class DimTime:
                         f"{hour:02d}:{minute:02d}:{second:02d}.000"
                     ])
 
-        return columns, data
+        return rows
 
 
-def main(filename: str = "Dim_Zeit.csv") -> None:
-    assert filename.endswith(".csv")
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Build a Time Dimension for a Data Warehouse. "
+        + "The output will be written to a CSV file unless a file "
+        + "is specified with the -f/--file option."
+    )
+    parser.add_argument(
+        "-f",
+        "--file",
+        dest="filename",
+        help="Write data to a file",
+        metavar="FILE"
+    )
+    args = parser.parse_args()
 
     locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
     dim_date = DimTime()
-    dim_date.dataframe.to_csv(filename, index=False)
+
+    if args.filename.endswith(".csv"):
+        dim_date.dataframe.to_csv(args.filename, index=False)
+    elif args.filename.endswith(".parquet"):
+        dim_date.dataframe.to_parquet(args.filename)
+    else:
+        dim_date.dataframe.to_csv("Dim_Zeit.csv", index=False)
 
 
 if __name__ == "__main__":
