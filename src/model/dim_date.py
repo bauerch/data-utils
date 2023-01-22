@@ -10,6 +10,9 @@ class DimDate:
         self.__date_series = pd.Series(pd.date_range(start, end))
         self.__dataframe = pd.DataFrame(self.__create_columns())
 
+        keys = self.column_date_key()
+        self.__dataframe.insert(0, keys[0], keys[1])
+
     @property
     def dataframe(self) -> pd.DataFrame:
         return self.__dataframe
@@ -43,6 +46,11 @@ class DimDate:
     def column_template(self) -> tuple[str, pd.Series]:
         column = ""
         series = self.__date_series
+        return column, series
+
+    def column_date_key(self) -> tuple[str, pd.Series]:
+        column = "Datum_Key"
+        series = self.__date_series.apply(lambda x: 10000 * x.year + 100 * x.month + x.day)
         return column, series
 
     def column_year(self) -> tuple[str, pd.Series]:
@@ -136,7 +144,7 @@ class DimDate:
 def main(
         filename: str = "Dim_Kalendertag.csv",
         date_from: datetime.date = datetime.date(2000, 1, 1),
-        date_till: datetime.date = datetime.date(2050, 1, 1)
+        date_till: datetime.date = datetime.date(2049, 12, 31)
 ) -> None:
     """
     """
