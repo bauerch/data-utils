@@ -55,7 +55,6 @@ AS BEGIN
 END
 GO
 
-
 /*
 Drops the given view, if it exists in the logical data warehouse.
 
