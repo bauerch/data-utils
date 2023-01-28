@@ -1,9 +1,6 @@
 USE [ldw];
 GO
 
-/*
-TBD.
-*/
 PRINT '';
 PRINT '*** Creating table: [gold].[Dim_Kalendertag]';
 GO
