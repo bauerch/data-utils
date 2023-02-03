@@ -1,4 +1,4 @@
-USE [master];
+USE [ldw];
 GO
 
 /*
@@ -13,11 +13,11 @@ CREATE EXTERNAL FILE FORMAT ff_csv_sep_semicolon
 WITH (
     FORMAT_TYPE = DELIMITEDTEXT,
     FORMAT_OPTIONS (
-        FIELD_TERMINATOR = ";"
+        FIELD_TERMINATOR = ';'
         , STRING_DELIMITER = '"'
         , First_Row = 2
         , USE_TYPE_DEFAULT = FALSE
-        , Encoding = 'UTF-8'
+        , Encoding = 'UTF8'
         , PARSER_VERSION = '2.0'
     )
 );
@@ -35,11 +35,11 @@ CREATE EXTERNAL FILE FORMAT ff_csv_sep_comma
 WITH (
     FORMAT_TYPE = DELIMITEDTEXT,
     FORMAT_OPTIONS (
-        FIELD_TERMINATOR = ","
+        FIELD_TERMINATOR = ','
         , STRING_DELIMITER = '"'
         , First_Row = 2
         , USE_TYPE_DEFAULT = FALSE
-        , Encoding = 'UTF-8'
+        , Encoding = 'UTF8'
         , PARSER_VERSION = '2.0'
     )
 );
@@ -51,7 +51,7 @@ Create external file format for snappy compressed PARQUET files.
 EXEC usp_drop_external_file_format_if_exists @name = 'ff_parquet_snappy';
 
 PRINT '';
-PRINT '*** Creating external file format: ff_parquet_snappy'
+PRINT '*** Creating external file format: ff_parquet_snappy';
 
 CREATE EXTERNAL FILE FORMAT ff_parquet_snappy
 WITH (

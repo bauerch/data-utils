@@ -1,4 +1,4 @@
-USE [master];
+USE [ldw];
 GO
 
 /*
@@ -13,7 +13,7 @@ AS BEGIN
     BEGIN
         PRINT '';
         PRINT '*** Dropping external table: ' + @name;
-        DECLARE @drop_stmt VARCHAR(200) = N'DROP EXTERNAL TABLE ' + @name;
+        DECLARE @drop_stmt NVARCHAR(200) = N'DROP EXTERNAL TABLE ' + @name;
         EXEC sp_executesql @tsql = @drop_stmt;
     END
 END
@@ -31,7 +31,7 @@ AS BEGIN
     BEGIN
         PRINT '';
         PRINT '*** Dropping external file format: ' + @name;
-        DECLARE @drop_stmt VARCHAR(200) = N'DROP EXTERNAL FILE FORMAT ' + @name;
+        DECLARE @drop_stmt NVARCHAR(200) = N'DROP EXTERNAL FILE FORMAT ' + @name;
         EXEC sp_executesql @tsql = @drop_stmt;
     END
 END
@@ -49,7 +49,7 @@ AS BEGIN
     BEGIN
         PRINT '';
         PRINT '*** Dropping external data source: ' + @name;
-        DECLARE @drop_stmt VARCHAR(200) = N'DROP EXTERNAL DATA SOURCE ' + @name;
+        DECLARE @drop_stmt NVARCHAR(200) = N'DROP EXTERNAL DATA SOURCE ' + @name;
         EXEC sp_executesql @tsql = @drop_stmt;
     END
 END
@@ -65,7 +65,7 @@ CREATE OR ALTER PROCEDURE [usp_drop_view_if_exists]
 AS BEGIN
     PRINT '';
     PRINT '*** Dropping view: ' + @name;
-    DECLARE @drop_stmt VARCHAR(200) = N'DROP VIEW IF EXISTS ' + @name;
+    DECLARE @drop_stmt NVARCHAR(200) = N'DROP VIEW IF EXISTS ' + @name;
     EXEC sp_executesql @tsql = @drop_stmt;
 END
 GO

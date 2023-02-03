@@ -1,8 +1,14 @@
 USE [ldw];
 GO
 
+/*****************************************
+-- Dim_Kalendertag
+*****************************************/
+EXEC usp_drop_external_table_if_exists @name = '[gold].[Dim_Kalendertag]';
+GO
+
 PRINT '';
-PRINT '*** Creating table: [gold].[Dim_Kalendertag]';
+PRINT '*** Creating external table: [gold].[Dim_Kalendertag]';
 GO
 
 CREATE EXTERNAL TABLE [gold].[Dim_Kalendertag] (
@@ -20,7 +26,7 @@ CREATE EXTERNAL TABLE [gold].[Dim_Kalendertag] (
     , [Woche_Jahr_Text]                 VARCHAR(20)
     , [Tag_im_Monat]                    TINYINT
     , [Tag_im_Monat_Text]               CHAR(2)
-    , [Tag_Name_Kurz]                   CHAR(2)         
+    , [Tag_Name_Kurz]                   CHAR(2)
     , [Tag_Name_Lang]                   VARCHAR(15)
     , [Feiertag_BW]                     BIT
     , [Feiertag_Name_BW]                VARCHAR(100)
@@ -32,14 +38,20 @@ WITH (
 );
 GO
 
+/*****************************************
+-- Dim_Zeit
+*****************************************/
+EXEC usp_drop_external_table_if_exists @name = '[gold].[Dim_Zeit]';
+GO
+
 PRINT '';
-PRINT '*** Creating table: [gold].[Dim_Zeit]';
+PRINT '*** Creating external table: [gold].[Dim_Zeit]';
 GO
 
 CREATE EXTERNAL TABLE [gold].[Dim_Zeit] (
     [Zeit_Key]                          INT
     , [Stunde_Format_24]                TINYINT
-    , [Stunde_Format_24_Text]           CHAR(2)         
+    , [Stunde_Format_24_Text]           CHAR(2)
     , [Stunde_Format_24_Kurz_Text]      CHAR(5)
     , [Stunde_Format_24_Lang_Text]      CHAR(8)
     , [Minute_Key]                      INT
