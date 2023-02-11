@@ -1,7 +1,7 @@
 import datetime
 import hashlib
-import pandas as pd
 import numpy as np
+import pandas as pd
 import uuid
 from typing import (
     Optional,
@@ -53,7 +53,7 @@ def scd1(
     """
     """
     try:
-        df_result_merged = pd.merge(
+        df_merged = pd.merge(
             df_dim,
             df_stg,
             how="left",
@@ -68,16 +68,16 @@ def scd1(
             dim_column_name = f"{column}"
             stg_column_name = f"{column}_stg"
 
-            dim_column = df_result_merged[dim_column_name]
-            stg_column = df_result_merged[stg_column_name]
-            merge_info = df_result_merged["_merge"]
+            dim_column = df_merged[dim_column_name]
+            stg_column = df_merged[stg_column_name]
+            merge_info = df_merged["_merge"]
 
             scd1_condition = (dim_column != stg_column) & (merge_info == "both")
-            df_result_merged.loc[scd1_condition, dim_column_name] = stg_column
+            df_merged.loc[scd1_condition, dim_column_name] = stg_column
 
         # Create new dataframe with updated table
-        columns = ["_merge"] + [column for column in df_result_merged.columns if column.endswith("_stg")]
-        result = df_result_merged.drop(columns, axis=1)
+        columns = ["_merge"] + [column for column in df_merged.columns if column.endswith("_stg")]
+        result = df_merged.drop(columns, axis=1)
     except Exception as error:
         print(error)
         result = None
@@ -120,7 +120,7 @@ def scd2(
     )
 
     try:
-        df_result_merged = pd.merge(
+        df_merged = pd.merge(
             df_dim_merge,
             df_stg_merge,
             how="outer",
@@ -130,8 +130,8 @@ def scd2(
         )
 
         # Flag each row with SCD2 actions to be performed
-        hash_dim = df_result_merged["scd2_checksum"]
-        hash_stg = df_result_merged["scd2_checksum_stg"]
+        hash_dim = df_merged["scd2_checksum"]
+        hash_stg = df_merged["scd2_checksum_stg"]
 
         conditions = [
             (hash_dim != hash_stg) & hash_dim.notnull() & hash_stg.notnull(),
@@ -142,29 +142,28 @@ def scd2(
             "INSERT"
         ]
 
-        df_result_merged["scd2_action_stg"] = np.select(conditions, choices, default=None)
-        df_result_merged = df_result_merged.drop(["scd2_checksum", "scd2_checksum_stg"], axis=1)
+        df_merged["scd2_action_stg"] = np.select(conditions, choices, default=None)
+        df_merged = df_merged.drop(["scd2_checksum", "scd2_checksum_stg"], axis=1)
 
         # TBD.
-        df_filter_no_action = df_result_merged[df_result_merged["scd2_action_stg"].isnull()]
-        df_filter_no_action = df_filter_no_action.drop(["scd2_action_stg"], axis=1)
-        df_result_no_action = no_action_handler(df_filter_no_action, key)
+        df_no_action = df_merged[df_merged["scd2_action_stg"].isnull()]
+        df_no_action = df_no_action.drop(["scd2_action_stg"], axis=1)
 
         # TBD.
-        df_filter_insert = df_result_merged[df_result_merged["scd2_action_stg"] == "INSERT"]
-        df_filter_insert = df_filter_insert.drop(["scd2_action_stg"], axis=1)
-        df_result_insert = insert_handler(df_filter_insert, key)
+        df_insert = df_merged[df_merged["scd2_action_stg"] == "INSERT"]
+        df_insert = df_insert.drop(["scd2_action_stg"], axis=1)
 
         # TBD.
-        df_filter_upsert = df_result_merged[df_result_merged["scd2_action_stg"] == "UPSERT"]
-        df_filter_upsert = df_filter_upsert.drop(["scd2_action_stg"], axis=1)
-        df_result_upsert = upsert_handler(df_filter_upsert, key)
+        df_upsert = df_merged[df_merged["scd2_action_stg"] == "UPSERT"]
+        df_upsert = df_upsert.drop(["scd2_action_stg"], axis=1)
 
-        result = pd.concat(
-            [df_dim[df_dim["active_flag"] == 0], df_result_no_action, df_result_insert, df_result_upsert],
-            axis=0
-        )
-        result = result.sort_values(by=[key, "active_flag"])
+        result = [
+            df_dim[df_dim["active_flag"] == 0],
+            no_action_handler(df_no_action),
+            insert_handler(df_insert, key),
+            upsert_handler(df_upsert, key)
+        ]
+        result = pd.concat(result, axis=0).sort_values(by=[key, "active_flag"])
     except Exception as error:
         print(error)
         result = None
@@ -173,8 +172,7 @@ def scd2(
 
 
 def no_action_handler(
-    dataframe: pd.DataFrame,
-    key: str
+    dataframe: pd.DataFrame
 ) -> pd.DataFrame:
     """
     """
