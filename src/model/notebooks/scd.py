@@ -152,9 +152,9 @@ def scd2(
 
         # TODO: Ensure consistent columns in all dataframes, remove technical columns
         # TODO: Add active_flag == 0 records from current dimension table
-        print(df_result_no_action.columns)
-        print(df_result_insert.columns)
-        print(df_result_upsert.columns)
+        print("NO ACTION:", df_result_no_action.columns)
+        print("INSERT:", df_result_insert.columns)
+        print("UPSERT:", df_result_upsert.columns)
 
         result = None
     except Exception as error:
@@ -170,7 +170,7 @@ def no_action_handler(
 ) -> pd.DataFrame:
     """
     """
-    raise NotImplementedError
+    return pd.DataFrame()
 
 
 def insert_handler(
@@ -230,8 +230,8 @@ def apply_scd_updates(
         scd1_columns: list[str],
         scd2_columns: list[str]
 ) -> None:
-    pd.set_option('display.max_columns', None)
-
+    """
+    """
     try:
         # Read CSVs files into dataframe
         df_dim = pd.read_csv(dim_file, delimiter=",")
@@ -256,35 +256,3 @@ def apply_scd_updates(
         print(error)
     else:
         print(result)
-
-
-if __name__ == "__main__":
-    param_columns = [
-        "sk",
-        "id",
-        "first_name",
-        "last_name",
-        "email",
-        "gender",
-        "ip_address",
-        "effective_from",
-        "effective_till",
-        "active_flag"
-    ]
-    param_scd1_columns = [
-        "first_name",
-        "last_name",
-        "email",
-        "gender"
-    ]
-    param_scd2_columns = [
-        "ip_address"
-    ]
-
-    apply_scd_updates(
-        "dim_user.csv",
-        "staging_user.csv",
-        "id",
-        param_scd1_columns,
-        param_scd2_columns
-    )
