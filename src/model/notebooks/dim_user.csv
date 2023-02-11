@@ -1,12 +1,6 @@
-sk,id,first_name,last_name,email,gender,ip_address,effective_from,effective_till,active_flag
-1001,1,Burr,Smyley,bsmyley0@miibeian.gov.cn,Male,227.218.138.248,2022-01-01,2023-02-02,0
-1001,1,Burr,Smyley,bsmyley0@miibeian.gov.cn,Male,227.218.139.248,2023-02-03,9999-12-31,1
-1002,2,Johan,January 1st,jjanuaryst1@devhub.com,Male,199.88.167.56,2023-02-03,9999-12-31,1
-1003,3,Sophia,Porch,sporch2@multiply.com,Female,66.112.102.88,2023-02-03,9999-12-31,1
-1004,4,Vachel,O'Gormally,vogormally3@goo.gl,Male,39.57.99.224,2023-02-03,9999-12-31,1
-1005,5,Raquela,Pond,rpond4@si.edu,Female,170.157.190.51,2023-02-03,9999-12-31,1
-1006,6,Mortie,Breedy,mbreedy5@wufoo.com,Male,253.100.96.242,2023-02-03,9999-12-31,1
-1007,7,Pen,Blooman,pblooman6@mozilla.com,Male,63.130.252.215,2023-02-03,9999-12-31,1
-1008,8,Alane,D'Ambrosio,adambrosio7@lycos.com,Bigender,124.61.218.169,2023-02-03,9999-12-31,1
-1009,9,Fransisco,Popple,fpopple8@hostgator.com,Male,203.40.186.234,2023-02-03,9999-12-31,1
-1010,10,Hannah,Colquite,hcolquite9@salon.com,Female,140.9.224.94,2023-02-03,9999-12-31,1
+sk,id,name,ip_address,effective_from,effective_till,active_flag
+44cdc19d-1c81-49b6-88cd-192f09a56c5d,1,Burr Smyley,100,2022-01-01,2023-02-02,0
+1e7ea596-e2b8-4272-9084-bd2c7f276a8b,1,Burr Smyley,101,2023-02-03,9999-12-31,1
+27288abc-908b-43e5-a1b3-e2ccdb3c1292,2,Tedd Mosley,200,2023-02-03,9999-12-31,1
+2ee09f00-54fb-48d5-bf5d-894025a14a88,3,Freddy Quin,300,2023-02-03,9999-12-31,1
+1780b4b1-893e-431b-9c3f-dad52d6564e2,4,Jan Gallowy,400,2023-01-01,9999-12-31,1

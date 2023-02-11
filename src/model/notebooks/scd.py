@@ -58,26 +58,31 @@ def scd1(
             df_stg,
             how="left",
             on=key,
-            suffixes=("", "_stg")
+            suffixes=("", "_stg"),
+            indicator=True,
+            validate="m:1"
         )
 
         # Update SCD1 columns in dimension table
         for column in scd1_columns:
             dim_column_name = f"{column}"
             stg_column_name = f"{column}_stg"
+
             dim_column = df_result_merged[dim_column_name]
             stg_column = df_result_merged[stg_column_name]
+            merge_info = df_result_merged["_merge"]
 
-            df_result_merged.loc[dim_column != stg_column, dim_column_name] = stg_column
+            scd1_condition = (dim_column != stg_column) & (merge_info == "both")
+            df_result_merged.loc[scd1_condition, dim_column_name] = stg_column
 
         # Create new dataframe with updated table
-        columns = [column for column in df_result_merged.columns if column.endswith("_stg")]
-        df_result_merged = df_result_merged.drop(columns, axis=1)
+        columns = ["_merge"] + [column for column in df_result_merged.columns if column.endswith("_stg")]
+        result = df_result_merged.drop(columns, axis=1)
     except Exception as error:
         print(error)
-        df_result_merged = None
+        result = None
 
-    return df_result_merged
+    return result
 
 
 def scd2(
@@ -120,7 +125,8 @@ def scd2(
             df_stg_merge,
             how="outer",
             on=key,
-            suffixes=("", "_stg")
+            suffixes=("", "_stg"),
+            validate="m:1"
         )
 
         # Flag each row with SCD2 actions to be performed
@@ -137,26 +143,28 @@ def scd2(
         ]
 
         df_result_merged["scd2_action_stg"] = np.select(conditions, choices, default=None)
+        df_result_merged = df_result_merged.drop(["scd2_checksum", "scd2_checksum_stg"], axis=1)
 
         # TBD.
         df_filter_no_action = df_result_merged[df_result_merged["scd2_action_stg"].isnull()]
+        df_filter_no_action = df_filter_no_action.drop(["scd2_action_stg"], axis=1)
         df_result_no_action = no_action_handler(df_filter_no_action, key)
 
         # TBD.
         df_filter_insert = df_result_merged[df_result_merged["scd2_action_stg"] == "INSERT"]
+        df_filter_insert = df_filter_insert.drop(["scd2_action_stg"], axis=1)
         df_result_insert = insert_handler(df_filter_insert, key)
 
         # TBD.
         df_filter_upsert = df_result_merged[df_result_merged["scd2_action_stg"] == "UPSERT"]
+        df_filter_upsert = df_filter_upsert.drop(["scd2_action_stg"], axis=1)
         df_result_upsert = upsert_handler(df_filter_upsert, key)
 
-        # TODO: Ensure consistent columns in all dataframes, remove technical columns
-        # TODO: Add active_flag == 0 records from current dimension table
-        print("NO ACTION:", df_result_no_action.columns)
-        print("INSERT:", df_result_insert.columns)
-        print("UPSERT:", df_result_upsert.columns)
-
-        result = None
+        result = pd.concat(
+            [df_dim[df_dim["active_flag"] == 0], df_result_no_action, df_result_insert, df_result_upsert],
+            axis=0
+        )
+        result = result.sort_values(by=[key, "active_flag"])
     except Exception as error:
         print(error)
         result = None
@@ -170,7 +178,11 @@ def no_action_handler(
 ) -> pd.DataFrame:
     """
     """
-    return pd.DataFrame()
+    # Create a new dataframe which only contains dimension table data
+    columns = [column for column in dataframe.columns if not column.endswith("_stg")]
+    result = dataframe[columns]
+
+    return result
 
 
 def insert_handler(
@@ -180,8 +192,7 @@ def insert_handler(
     """
     """
     # Create a new dataframe which only contains staging data
-    columns = [column for column in dataframe.columns if column.endswith("_stg")]
-    columns.append(key)
+    columns = [key] + [column for column in dataframe.columns if column.endswith("_stg")]
     result = dataframe[columns]
 
     # Create a surrogate key for each row added
@@ -209,16 +220,13 @@ def upsert_handler(
 
     # Create a new dataframe which only contains dimension table data.
     columns = [column for column in dataframe.columns if not column.endswith("_stg")]
-    columns.append(key)
     result_update = dataframe[columns]
 
     # Update the active_flag, effective_till for existing rows
+    effective_till = current_date - datetime.timedelta(days=1)
     result_update = result_update.copy()
-    result_update.loc[:, ("effective_till", "active_flag")] = (current_date, 0)
 
-    # TODO: Ensure consistent columns in all dataframes, remove technical columns
-    print(result_insert.columns)
-    print(result_update.columns)
+    result_update.loc[:, ("effective_till", "active_flag")] = (effective_till, 0)
 
     return pd.concat([result_insert, result_update], axis=0)
 
